@@ -14,6 +14,6 @@ How to build:
 7. Download [Minigolf](https://github.com/nem0/lumix_minigolf).
 8. Star Lumix Studio.
 9. Select Minigolf folder as working directory.
-10. Open [maps/main.unv](https://github.com/nem0/lumix_minigolf/blob/master/maps/main.unv].
+10. Open [maps/main.unv](https://github.com/nem0/lumix_minigolf/blob/master/maps/main.unv).
 11. Start game mode.
 
