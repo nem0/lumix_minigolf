@@ -1,0 +1,6 @@
+type = "patch9"
+top = 12
+left = 12
+right = 180
+bottom = 50
+texture = "button_rectangle_line.png"
