@@ -17,3 +17,4 @@ How to build:
 10. Open [maps/main.unv](https://github.com/nem0/lumix_minigolf/blob/master/maps/main.unv).
 11. Start game mode.
 
+Prebuilt binaries are available in [releases](https://github.com/nem0/lumix_minigolf/releases/).
