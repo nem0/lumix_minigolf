@@ -107,7 +107,7 @@ end
 local ui_window_label = function(text)
 	return ui.text {
 		text = text,
-		font = "editor/fonts/notosans-bold.ttf",
+		font = "engine/editor/fonts/notosans-bold.ttf",
 		valign = 0,
 		halign = 1,
 		font_size = 30,
@@ -131,7 +131,7 @@ function start()
 				top_points = -20,
 				bottom_points = 20,
 				text = "Start game",
-				font = "editor/fonts/notosans-bold.ttf",
+				font = "engine/editor/fonts/notosans-bold.ttf",
 				valign = 1,
 				halign = 1,
 				font_size = 30,
@@ -169,7 +169,7 @@ local levelFinished = function()
 				top_points = -20,
 				bottom_points = 20,
 				text = "Next level",
-				font = "editor/fonts/notosans-bold.ttf",
+				font = "engine/editor/fonts/notosans-bold.ttf",
 				valign = 1,
 				halign = 1,
 				font_size = 30,
