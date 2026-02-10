@@ -1,1 +1,5 @@
 *.bak
+.lumix
+*.log
+studio.ini
+*.prj

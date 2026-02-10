@@ -21,10 +21,9 @@ local ui_enabled = false
 local is_down = false
 local impuluse_to_add = 0
 local is_ball_moving = false
-local is_w_down = false
-local is_s_down = false
-local is_a_down = false
-local is_d_down = false
+local game_time = 0
+local strokes = 0
+local hud_canvas = nil
 
 local enableUI = function()
 	ui_enabled = true
@@ -115,6 +114,68 @@ local ui_window_label = function(text)
 	}
 end
 
+local level_text = nil
+local strokes_text = nil
+local time_text = nil
+local power_background = nil
+local power_foreground = nil
+
+local createHUD = function()
+	hud_canvas = ui.canvas { name = "hud_canvas" }
+	level_text = ui.text {
+		text = "Level: " .. current_level,
+		font = "engine/editor/fonts/notosans-bold.ttf",
+		font_size = 72,
+		valign = 0,
+		halign = 0,
+		left_points = 10,
+		top_points = 10,
+	}
+	level_text.parent = hud_canvas
+	strokes_text = ui.text {
+		text = "Strokes: " .. strokes,
+		font = "engine/editor/fonts/notosans-bold.ttf",
+		font_size = 72,
+		valign = 0,
+		halign = 0,
+		left_points = 10,
+		top_points = 100,
+	}
+	strokes_text.parent = hud_canvas
+	time_text = ui.text {
+		text = "Time: 0.00",
+		font = "engine/editor/fonts/notosans-bold.ttf",
+		font_size = 72,
+		valign = 0,
+		halign = 0,
+		left_points = 10,
+		top_points = 190,
+	}
+	time_text.parent = hud_canvas
+	power_background = ui.image {
+		sprite = "ui/Blue/Default/button_rectangle_depth_flat.spr",
+		left_relative = 0.5,
+		left_points = -100,
+		right_relative = 0.5,
+		right_points = 100,
+		bottom_relative = 1.0,
+		bottom_points = 0,
+		top_relative = 1.0,
+		top_points = -30,
+		name = "power_background"
+	}
+	power_background.parent = hud_canvas
+	power_foreground = ui.image {
+		--sprite = "ui/Blue/Default/button_rectangle_depth_flat.spr",
+		left_relative = 0,
+		right_relative = 0,
+		bottom_relative = 0,
+		top_relative = 1,
+		name = "power_foreground"
+	}
+	power_foreground.parent = power_background
+end
+
 function start()
 	loadLevel(1)
 	ui.setWorld(this.world)
@@ -146,16 +207,60 @@ function start()
 	enableUI()
 end
 
+local gameFinished = function()
+	ui.setWorld(this.world)
+	canvas = ui.canvas {
+		ui_window {
+			ui_window_label "Game Complete!",
+			
+			ui.button {
+				sprite = "ui/Blue/Default/button_rectangle_depth_gloss.spr",
+				ui.center,
+				left_points = -100,
+				right_points = 100,
+				top_points = -20,
+				bottom_points = 20,
+				text = "Play Again",
+				font = "engine/editor/fonts/notosans-bold.ttf",
+				valign = 1,
+				halign = 1,
+				font_size = 30,
+				on_click = function()
+					if hud_canvas then hud_canvas:destroy() end
+					this.world:destroyPartition(level_partition)
+					club = nil
+					ball = nil
+					current_level = 1
+					strokes = 0
+					game_time = 0
+					loadLevel(1)
+					canvas:destroy()
+					disableUI()
+				end
+			}
+		}
+	}
+	enableUI()
+end
+
 local nextLevel = function()
+	if hud_canvas then hud_canvas:destroy() end
 	this.world:destroyPartition(level_partition)
 	club = nil
 	ball = nil
 	current_level += 1
+	strokes = 0
+	game_time = 0
 	loadLevel(current_level)
 end
 
 
 local levelFinished = function()
+	if current_level >= 4 then
+		gameFinished()
+		return
+	end
+	
 	ui.setWorld(this.world)
 	canvas = ui.canvas {
 		ui_window {
@@ -222,12 +327,15 @@ function onLevelLoaded()
 			model_instance = { source = "models/club_blue.fbx", enabled = false }
 		}
 		this.world:setActivePartition(0)
+		createHUD()
 		return false
 	end)
 end
 
 function update(td)
 	if club == nil then return end
+
+	game_time = game_time + td
 
 	is_ball_moving = ball.jolt_body.active
 
@@ -257,6 +365,15 @@ function update(td)
 		local swing_axis = {-dirz, 0, dirx} -- axis perpendicular to forward (dirx,0,dirz) and up (0,1,0)
 		local swing_quat = lmath.makeQuatAxisAngle(swing_axis, -swing_pitch)
 		club.rotation = lmath.mulQuat(swing_quat, yaw_quat)
+
+		-- show club when possible to play
+		if not ui_enabled then
+			club.model_instance.enabled = true
+		end
+	end
+
+	if is_ball_moving then
+		club.model_instance.enabled = false
 	end
 
 	if is_down and not is_ball_moving then
@@ -275,6 +392,11 @@ function update(td)
 		bp[3] - dirz * 2
 	}
 	camera.rotation = camera_quat
+
+	if level_text then level_text.gui_text.text = "Level: " .. current_level end
+	if strokes_text then strokes_text.gui_text.text = "Strokes: " .. strokes end
+	if time_text then time_text.gui_text.text = string.format("Time: %.2f", game_time) end
+	if power_foreground then power_foreground.gui_rect.right_points = 200 * swing_pitch end
 end
 
 function onInputEvent(event : InputEvent)
@@ -285,27 +407,13 @@ function onInputEvent(event : InputEvent)
 	end
 
 	if event.type == "button" then 
-		if event.device.type == "keyboard" then
-			if event.key_id == string.byte("W") then
-				is_w_down = event.down	
-			end
-			if event.key_id == string.byte("S") then
-				is_s_down = event.down	
-			end
-			if event.key_id == string.byte("A") then
-				is_a_down = event.down	
-			end
-			if event.key_id == string.byte("D") then
-				is_d_down = event.down	
-			end
-		end
 		if event.device.type == "mouse" and event.key_id == 0 then
 			if event.down then
 				is_down = true
-				club.model_instance.enabled = true
 			else
 				is_down = false
 				impuluse_to_add = swing_pitch
+				strokes = strokes + 1
 				coro.run(function()
 					interpolateSwingPitch(swing_pitch, 0, 1.2)
 					return false

@@ -32,14 +32,26 @@ local rect_properties = function(e, k,v)
 	if k == "top_points" then
 		e.gui_rect.top_points = v
 		return true
+	elseif k == "top_relative" then
+		e.gui_rect.top_relative = v
+		return true
 	elseif k == "bottom_points" then
 		e.gui_rect.bottom_points = v
+		return true
+	elseif k == "bottom_relative" then
+		e.gui_rect.bottom_relative = v
 		return true
 	elseif k == "left_points" then
 		e.gui_rect.left_points = v
 		return true
+	elseif k == "left_relative" then
+		e.gui_rect.left_relative = v
+		return true
 	elseif k == "right_points" then
 		e.gui_rect.right_points = v
+		return true
+	elseif k == "right_relative" then
+		e.gui_rect.right_relative = v
 		return true
 	elseif type(v) == "function" then
 		v(e)
